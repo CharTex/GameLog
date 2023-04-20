@@ -9,6 +9,10 @@ from pydantic import EmailStr
 
 from hashlib import sha256
 
+# Configuration settings for debug
+database_path = "storage/database.db"
+# Configuaration Ends
+
 app = FastAPI()
 
 class Account(BaseModel):
