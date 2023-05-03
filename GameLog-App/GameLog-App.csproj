@@ -50,6 +50,20 @@
     </ItemGroup>
 
     <ItemGroup>
+      <MauiAsset Include="wwwroot\login.html" />
+      <MauiAsset Include="wwwroot\navbar.html" />
+      <MauiAsset Include="wwwroot\newrecord.html" />
+      <MauiAsset Include="wwwroot\register.html" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="wwwroot\login.html" />
+      <None Include="wwwroot\navbar.html" />
+      <None Include="wwwroot\newrecord.html" />
+      <None Include="wwwroot\register.html" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
     </ItemGroup>
 
