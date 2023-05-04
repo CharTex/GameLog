@@ -7,13 +7,21 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from pydantic import EmailStr
 
-from hashlib import sha256
+from DBManager import DBManager
+import encryption
 
 # Configuration settings for debug
-database_path = "storage/database.db"
+# TODO: Move this config to a file?
+database_path = "./storage/database.db"
 # Configuaration Ends
 
-app = FastAPI()
+database = DBManager(database_path)
+
+if database.get_connected():
+    app = FastAPI()
+else:
+    print("Database connection failed. Exiting program...")
+    exit(1)
 
 class Account(BaseModel):
     email: EmailStr
@@ -58,10 +66,3 @@ def new_account(email):
 @app.get("/accounts")
 def retrieve_account(email, password):
     return
-
-
-def hash_password(password):
-    # Returns the hash of the supplied password.
-    hasher = sha256()
-    hasher.update(password)
-    hash = hasher.digest()
