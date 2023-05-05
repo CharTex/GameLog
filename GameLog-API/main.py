@@ -4,6 +4,8 @@
 from typing import Union
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from pydantic import BaseModel
 from pydantic import EmailStr
 
@@ -19,6 +21,14 @@ database = DBManager(database_path)
 
 if database.get_connected():
     app = FastAPI()
+
+    app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    )
 else:
     print("Database connection failed. Exiting program...")
     exit(1)
@@ -66,3 +76,7 @@ def new_account(email):
 @app.get("/accounts")
 def retrieve_account(email, password):
     return
+
+@app.get("/logintoken")
+def get_login_token():
+    return "Hello World!"
