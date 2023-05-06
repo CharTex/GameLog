@@ -5,5 +5,5 @@ def hash_password(password):
     hasher = sha256()
     password = password.encode('utf-8')
     hasher.update(password)
-    hash = hasher.digest()
+    hash = hasher.hexdigest()
     return hash

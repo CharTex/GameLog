@@ -34,16 +34,18 @@ else:
     exit(1)
 
 class Account(BaseModel):
-    email: EmailStr
+    email: str
 
 class AccountCreate(Account):
-    first_name: str
-    last_name: str
+    username: str
     password: str
 
 class AccountEdit(Account):
-    first_name: str
-    last_name: str
+    username: str
+    password: str
+
+class AccountLogin(BaseModel):
+    username: str
     password: str
 
 class Review(BaseModel):
@@ -55,6 +57,9 @@ class ReviewCreate(Review):
 
 class ReviewEdit(Review):
     review_score: int
+
+def Login():
+    return NotImplementedError
 
 @app.get("/")
 def read_root():
@@ -70,8 +75,8 @@ def login(email: str):
     return
 
 @app.post("/accounts")
-def new_account(email):
-    return
+def new_account(account: AccountCreate):
+    database.create_account(account.email, account.username, encryption.hash_password(account.password), "User")
 
 @app.get("/accounts")
 def retrieve_account(email, password):
@@ -79,4 +84,8 @@ def retrieve_account(email, password):
 
 @app.get("/logintoken")
 def get_login_token():
-    return "Hello World!"
+    return {"Hello": "World"}
+
+@app.post("/logintoken")
+def get(account: AccountLogin):
+    database.verify_login_by_username(account.username, account.password)
