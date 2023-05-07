@@ -22,7 +22,7 @@ export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState({ value: '', error: '' });
   const [email, setEmail] = useState({ value: '', error: '' });
   const [password, setPassword] = useState({ value: '', error: '' });
-  const [confirm, setConfirmPassword] = useState({ value: '', error: '' });
+  const [confirmPassword, setConfirmPassword] = useState({ value: '', error: '' });
 
   let logo = require("../assets/logo-nobg.png")
   let ip = ""
@@ -70,32 +70,53 @@ export default function LoginScreen({ navigation }) {
     // Passwords must contain a uppercase, lowercase, numeral and special character.
     if (! /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{5,20}$/.test(password.value)) {
       alert("Passwords must be between 5 and 20 characters and have an uppercase, lowercase, numeric and special character.")
+      return false
     }
+    return true
   }
 
   const register = async () => {
+    // Validate fields
     if (!validateUsername() || !validateEmail() || !validatePassword()) {
       return false
     }
 
-    const response = await fetch(ip + "accounts", {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        "username": username.value,
-        "password": password.value
-      }),
-    })
-    console.log(response.status)
-    if (response.status == 200) {
-      alert("Yeah") // Web Specific Alert
-    }
-    else {
-      alert("Help") // Web Specific Alert
-    }
+      fetch(ip + "accounts", {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          "email": email.value,
+          "username": username.value,
+          "password": password.value
+        })
+      }).then(response => {
+        if (response.ok) {
+          return response.json()
+        }
+        else if (response.status === 422) {
+          return Promise.reject("Incorrect data sent? Contact a Systems Administrator.")
+        }
+        else {
+          return Promise.reject("Could not connect to server. Try again later.")
+        }
+      })
+      .then (data => {
+        if (data.Status == "Failure") {
+          alert("Error: " + data.Error)
+        }
+        else {
+          alert("Account Created. Please log in.")
+          setEmail({value: "", error: ''})
+          setUsername({value: "", error: ''})
+          setPassword({value: "", error: ''})
+          setConfirmPassword({value: "", error: ''})
+          navigation.navigate("Login")
+        }
+      })
+      .catch (error => alert(error))
   }
 
   return (
@@ -104,19 +125,19 @@ export default function LoginScreen({ navigation }) {
         <Text style={styles.title}> GameLog</Text>
         <Text style={styles.inputTitle}>Username:</Text>
         <View style={styles.inputView}>
-          <TextInput textAlign="center" style={styles.inputText} onChangeText={(text) => setUsername({ value: text, error: '' })} />
+          <TextInput textAlign="center" style={styles.inputText} value={username.value} onChangeText={(text) => setUsername({ value: text, error: '' })} />
         </View>
         <Text style={styles.inputTitle}>Email:</Text>
         <View style={styles.inputView}>
-          <TextInput textAlign="center" style={styles.inputText} onChangeText={(text) => setEmail({ value: text, error: '' })} />
+          <TextInput textAlign="center" style={styles.inputText} value={email.value} onChangeText={(text) => setEmail({ value: text, error: '' })} />
         </View>
         <Text style={styles.inputTitle}>Password:</Text>
         <View style={styles.inputView}>
-          <TextInput style={styles.inputText} secureTextEntryplaceholder="Password" secureTextEntry placeholderTextColor="#003f5c" onChangeText={(text) => setPassword({ value: text, error: '' })} />
+          <TextInput textAlign="center" style={styles.inputText} value={password.value} secureTextEntryplaceholder="Password" secureTextEntry placeholderTextColor="#003f5c" onChangeText={(text) => setPassword({ value: text, error: '' })} />
         </View>
         <Text style={styles.inputTitle}>Confirm Password:</Text>
         <View style={styles.inputView}>
-          <TextInput style={styles.inputText} secureTextEntryplaceholder="Confirm Password" secureTextEntry placeholderTextColor="#003f5c" onChangeText={(text) => setConfirmPassword({ value: text, error: '' })} />
+          <TextInput textAlign="center" style={styles.inputText} value={confirmPassword.value} secureTextEntryplaceholder="Confirm Password" secureTextEntry placeholderTextColor="#003f5c" onChangeText={(text) => setConfirmPassword({ value: text, error: '' })} />
         </View>
         <TouchableOpacity style={styles.loginBtn} onPress={register}>
           <Text style={styles.loginText}>Register</Text>

@@ -1,4 +1,5 @@
-#
+# File Name: DBManager.py
+# File Description: Class to hold functions and data related to the database.
 
 import sqlite3
 import os
@@ -155,11 +156,11 @@ class DBManager():
         # Creates an account in the database.
         # TODO: Duplicate Checking Error Codes.
 
-        if (self.check_account_by_email(email)):
-            return False
+        if (self.lookup_account_by_email(email)):
+            return "EmailAlreadyExists"
         
-        if (self.check_account_by_username(username)):
-            return False
+        if (self.lookup_account_by_username(username)):
+            return "UsernameAlreadyExists"
         
         cursor = self.connection.cursor()
         try:
@@ -169,6 +170,8 @@ class DBManager():
         except Exception as e:
             print("Unknown Error?")
             print(e)
+            return "UnknownError"
+        return True
 
     def generate_login_token(self, id):
         return

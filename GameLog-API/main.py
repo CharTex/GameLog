@@ -73,7 +73,15 @@ def read_item(item_id: int, q: Union[str, None] = None):
 
 @app.post("/accounts")
 def new_account(account: AccountCreate):
-    database.create_account(account.email, account.username, encryption.hash_password(account.password), "User")
+    result = database.create_account(account.email, account.username, encryption.hash_password(account.password), "User")
+    if result == "EmailAlreadyExists":
+        return {"Status": "Failure", "Error": "Email Already Exists"}
+    if result == "UsernameAlreadyExists":
+        return {"Status": "Failure", "Error": "Username Already Exists"}
+    if result == "Unknown Error":
+        return {"Status": "Failure", "Error": "Unknown Error. Try Again Later"}
+    else:
+        return {"Status": "Success"}
 
 @app.get("/accounts")
 def retrieve_account(email, password):
@@ -85,5 +93,8 @@ def get_login_token():
 
 @app.post("/login")
 def login(account: AccountLogin):
-    database.verify_login_by_username(account.username, encryption.hash_password(account.password))
-    
+    id = database.verify_login_by_username(account.username, encryption.hash_password(account.password))
+
+    if id != False:
+        login_token = database.generate_login_token(id)
+        return {"Status": "Success", "Token": str(login_token)}
