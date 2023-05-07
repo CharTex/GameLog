@@ -7,7 +7,6 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import {
   LoginScreen,
   RegisterScreen,
-  ForgotPasswordScreen,
 } from "./screens"
 
 const LoginTabs = createMaterialBottomTabNavigator();
