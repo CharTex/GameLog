@@ -95,38 +95,59 @@ class DBManager():
             print(f"Alert: {e}. Continuting...")
 
     def verify_login_by_username(self, username, password_hash):
-        # Verifies login information using email and password hash.
-        # Returns True if email and password match.
+        # Verifies login information using username and password hash.
+        # Returns Account ID if valid login. Returns False if not.
         cursor = self.connection.cursor()
-        result = cursor.execute(f"""SELECT * FROM accounts WHERE username='{username}' AND password_hash='{password_hash}'""")
-        if result is not None:
-            print("Account Found!")
+        cursor.execute(f"""SELECT * FROM accounts WHERE username='{username}' AND password_hash='{password_hash}'""")
+        
+        # Check if any data was retrieved.
+        # If yes, get the first entry.
+        rows = cursor.fetchall()
+        if len(rows) != 0:
+            print(f"Successful Login from user id: {rows[0][0]}")
+            return rows[0][0]
+        else:
+            return False
 
     def verify_login_by_email(self, email, password_hash):
         # Verifies login information using email and password hash.
-        # Returns True if email and password match.
+        # Returns Account ID if valid login. Returns False if not.
         cursor = self.connection.cursor()
-        result = cursor.execute(f"""SELECT * FROM accounts WHERE email='{email}' AND password_hash='{password_hash}'""")
-        if result is not None:
-            print("Account Found!")
+        cursor.execute(f"""SELECT * FROM accounts WHERE email='{email}' AND password_hash='{password_hash}'""")
+        
+        # Check if any data was retrieved.
+        # If yes, get the first entry.
+        rows = cursor.fetchall()
+        if len(rows) != 0:
+            return rows[0][0]
+        else:
+            return False
 
-    def check_account_by_username(self, username):
+    def lookup_account_by_username(self, username):
         # Checks to see if the account exists using username.
-        # Returns True if account is found.
+        # Returns Account ID if account is found. Returns False if Not
         cursor = self.connection.cursor()
-        result = cursor.execute(f"""SELECT * FROM accounts WHERE username='{username}'""")
-        if result is not None:
-            return True
+        cursor.execute(f"""SELECT * FROM accounts WHERE username='{username}'""")
+
+        # Check if any data was retrieved.
+        # If yes, get the first entry.
+        rows = cursor.fetchall()
+        if len(rows) != 0:
+            return rows[0][0]
         else:
             return False
         
-    def check_account_by_email(self, email):
+    def lookup_account_by_email(self, email):
         # Checks to see if the account exists using email.
-        # Returns True if account is found.
+        # Returns Account ID if account is found. Returns False if Not
         cursor = self.connection.cursor()
-        result = cursor.execute(f"""SELECT * FROM accounts WHERE email='{email}'""")
-        if result is not None:
-            return True
+        cursor.execute(f"""SELECT * FROM accounts WHERE email='{email}'""")
+
+        # Check if any data was retrieved.
+        # If yes, get the first entry.
+        rows = cursor.fetchall()
+        if len(rows) != 0:
+            return rows[0][0]
         else:
             return False
 
@@ -148,6 +169,9 @@ class DBManager():
         except Exception as e:
             print("Unknown Error?")
             print(e)
+
+    def generate_login_token(self, id):
+        return
 
 
     

@@ -22,6 +22,7 @@ database = DBManager(database_path)
 if database.get_connected():
     app = FastAPI()
 
+    # Setup CORS to allow local networks to connect for debug.
     app.add_middleware(
     CORSMiddleware,
     allow_origins=['*'],
@@ -70,10 +71,6 @@ def read_root():
 def read_item(item_id: int, q: Union[str, None] = None):
     return {"item_id": item_id, "q": q}
 
-@app.get("/login")
-def login(email: str):
-    return
-
 @app.post("/accounts")
 def new_account(account: AccountCreate):
     database.create_account(account.email, account.username, encryption.hash_password(account.password), "User")
@@ -86,6 +83,7 @@ def retrieve_account(email, password):
 def get_login_token():
     return {"Hello": "World"}
 
-@app.post("/logintoken")
-def get(account: AccountLogin):
-    database.verify_login_by_username(account.username, account.password)
+@app.post("/login")
+def login(account: AccountLogin):
+    database.verify_login_by_username(account.username, encryption.hash_password(account.password))
+    
