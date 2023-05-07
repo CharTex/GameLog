@@ -24,9 +24,7 @@ export default function LoginScreen({ navigation }) {
   const [password, setPassword] = useState({ value: '', error: '' });
   const [confirmPassword, setConfirmPassword] = useState({ value: '', error: '' });
 
-  let logo = require("../assets/logo-nobg.png")
   let ip = ""
-  let tempwidth = "100%"
 
   if (Platform.OS == 'web') {
     ip = "http://localhost:8000/"
@@ -71,6 +69,10 @@ export default function LoginScreen({ navigation }) {
     if (! /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{5,20}$/.test(password.value)) {
       alert("Passwords must be between 5 and 20 characters and have an uppercase, lowercase, numeric and special character.")
       return false
+    }
+
+    if (!password.value == confirmPassword.value) {
+      alert("Passwords are not the same.")
     }
     return true
   }
