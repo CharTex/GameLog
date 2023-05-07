@@ -68,9 +68,6 @@ export default function LoginScreen({ navigation }) {
         <View style={styles.inputView}>
           <TextInput style={styles.inputText} secureTextEntryplaceholder="Password" secureTextEntry placeholderTextColor="#003f5c" onChangeText={(text) => setPassword({ value: text, error: '' })} />
         </View>
-        <TouchableOpacity>
-          <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-        </TouchableOpacity>
         <TouchableOpacity style={styles.loginBtn} onPress={login}>
           <Text style={styles.loginText}>LOGIN </Text>
         </TouchableOpacity>
