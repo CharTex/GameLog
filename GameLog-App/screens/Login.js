@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { useState } from 'react'
 
 import { AsyncStorage } from 'react-native';
 
@@ -8,106 +9,121 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
-} from "react-native"
+  Alert,
+  Platform,
+  Text
+} from "react-native";
 
-import { Button, NativeBaseProvider, Text, Box } from "native-base";
+import { NativeBaseProvider} from "native-base";
+
 
 
 export default function LoginScreen({ navigation }) {
-  let email = ""
-  let password = ""
+  const [username, setUsername] = useState({ value: '', error: '' });
+  const [password, setPassword] = useState({ value: '', error: '' });
   let logo = require("../assets/logo-nobg.png")
+  let ip = ""
+  let tempwidth = "100%"
 
-  async function ping_API() {
-    let response = await fetch("http://localhost:8000/logintoken");
-    let data = await response.json();
-    alert(data);
+  if (Platform.OS == 'web') {
+    ip = "http://localhost:8000/"
+  }
+  else {
+    ip = "http://10.0.2.2:8000/"
+  }
+
+  const login = async () => {
+    const response = await fetch(ip + "login", {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        "username": username.value,
+        "password": password.value
+      }),
+    })
+    const responsetwo = await response
+    console.log(response.status)
+    if (response.status == 200) {
+      alert("Yeah") // Web Specific Alert
+      //Alert.alert("Success", "Logged In Successfully") // IOS/Android Specific Alert
+    }
+    else {
+      alert("Help") // Web Specific Alert
+      //Alert.alert("Failure", "Unknown Error Occured") // IOS/Android Specific Alert
+    }
   }
 
   return (
     <NativeBaseProvider>
-
       <View style={styles.container}>
-        <View style={styles.loginbox}>
-          <Image source={logo}></Image>
-          <View style={styles.row}>
-            <Text>Email:       </Text>
-            <TextInput
-              label="Email"
-              returnKeyType="next"
-              value={email.value}
-              onChangeText={(text) => setEmail({ value: text, error: '' })}
-              error={!!email.error}
-              errorText={email.error}
-              autoCapitalize="none"
-              autoCompleteType="email"
-              textContentType="emailAddress"
-              keyboardType="email-address"
-              style={styles.inputView}
-            />
-          </View>
-          <View style={styles.row}>
-            <Text>Password: </Text>
-            <TextInput
-              label="Password"
-              returnKeyType="done"
-              value={password.value}
-              onChangeText={(text) => setPassword({ value: text, error: '' })}
-              error={!!password.error}
-              errorText={password.error}
-              secureTextEntry
-              style={styles.inputView}
-            />
-          </View>
-          <Button style={styles.loginBtn} title="Login" onPress={() => ping_API()}>Login</Button>
+        <Text style={styles.title}> GameLog</Text>
+        <Text style={styles.inputTitle}>Username:</Text>
+        <View style={styles.inputView}>
+          <TextInput textAlign="center" style={styles.inputText} onChangeText={(text) => setUsername({ value: text, error: '' })} />
         </View>
-      </View>
-    </NativeBaseProvider>
+        <Text style={styles.inputTitle}>Password:</Text>
+        <View style={styles.inputView}>
+          <TextInput style={styles.inputText} secureTextEntryplaceholder="Password" secureTextEntry placeholderTextColor="#003f5c" onChangeText={(text) => setPassword({ value: text, error: '' })} />
+        </View>
+        <TouchableOpacity>
+          <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.loginBtn} onPress={login}>
+          <Text style={styles.loginText}>LOGIN </Text>
+        </TouchableOpacity>
+      </View >
+    </NativeBaseProvider >
   )
 }
 
-async function ping_API() {
-  let response = await fetch("http://localhost:8000/logintoken");
-  let data = await response.json();
-  alert(data);
-}
-
-
-
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
-    backgroundColor: "grey",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: 'grey',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  loginbox: {
-    backgroundColor: "lightgrey",
-  },
-  image: {
-    flex: 2,
+  title:{
+    fontWeight: "bold",
+    fontSize:30,
+    color:"#fb5b5a",
     marginBottom: 40,
+    paddingTop: 30
+  },
+
+  inputTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 20,
   },
   inputView: {
-    backgroundColor: "#FFC0CB",
-    borderRadius: 30,
-    width: "70%",
-    height: 45,
-    marginBottom: 20,
-    alignItems: "right",
+  width:"80%",
+  backgroundColor:"#3AB4BA",
+  borderRadius:25,
+  height:50,
+  marginBottom:20,
+  justifyContent:"center",
+  padding:20
   },
-  loginBtn: {
-    borderRadius: 25,
-    height: 50,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 40,
-    backgroundColor: "#FF1493",
-    color: "white",
+  inputText: {
+    height:50,
+    color:"white"
   },
-  row: {
-    flexDirection: 'row',
-    marginTop: 4,
+  forgotPasswordText:{
+    color:"white",
+    fontSize:15
+  },
+  loginBtn:{
+    width:"80%",
+    backgroundColor:"#fb5b5a",
+    borderRadius:25,
+    height:50,
+    alignItems:"center",
+    justifyContent:"center",
+    marginTop:40,
+    marginBottom:10
   },
 });

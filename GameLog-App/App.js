@@ -10,17 +10,17 @@ import {
   ForgotPasswordScreen,
 } from "./screens"
 
-const Tab = createMaterialBottomTabNavigator();
+const LoginTabs = createMaterialBottomTabNavigator();
 
-function LoginTabs() {
+function LoginNavbar() {
   return (
-    <Tab.Navigator
+    <LoginTabs.Navigator
       initialRouteName="Login"
       activeColor="red"
       labelStyle={{ fontSize: 12 }}
       style={{ backgroundColor: 'tomato' }}
     >
-      <Tab.Screen
+      <LoginTabs.Screen
         name="Login"
         component={LoginScreen}
         options={{
@@ -30,7 +30,7 @@ function LoginTabs() {
           ),
         }}
       />
-      <Tab.Screen
+      <LoginTabs.Screen
         name="Register"
         component={RegisterScreen}
         options={{
@@ -40,14 +40,14 @@ function LoginTabs() {
           ),
         }}
       />
-    </Tab.Navigator>
+    </LoginTabs.Navigator>
   );
 }
 
 export default function App() {
   return (
     <NavigationContainer>
-      <LoginTabs />
+      <LoginNavbar />
     </NavigationContainer>
   );
 }
