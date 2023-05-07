@@ -21,9 +21,7 @@ import { NativeBaseProvider} from "native-base";
 export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState({ value: '', error: '' });
   const [password, setPassword] = useState({ value: '', error: '' });
-  let logo = require("../assets/logo-nobg.png")
   let ip = ""
-  let tempwidth = "100%"
 
   if (Platform.OS == 'web') {
     ip = "http://localhost:8000/"
@@ -48,30 +46,43 @@ export default function LoginScreen({ navigation }) {
   }
 
   const login = async () => {
-    if (!validateUsername) {
+    // Validate fields
+    if (!validateUsername()) {
       return false
     }
-    const response = await fetch(ip + "login", {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        "username": username.value,
-        "password": password.value
-      }),
-    })
-    const responsetwo = await response
-    console.log(response.status)
-    if (response.status == 200) {
-      alert("Yeah") // Web Specific Alert
-      //Alert.alert("Success", "Logged In Successfully") // IOS/Android Specific Alert
-    }
-    else {
-      alert("Help") // Web Specific Alert
-      //Alert.alert("Failure", "Unknown Error Occured") // IOS/Android Specific Alert
-    }
+
+      fetch(ip + "login", {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          "username": username.value,
+          "password": password.value
+        })
+      }).then(response => {
+        if (response.ok) {
+          return response.json()
+        }
+        else if (response.status === 422) {
+          return Promise.reject("Incorrect data sent? Contact a Systems Administrator.")
+        }
+        else {
+          return Promise.reject("Could not connect to server. Try again later.")
+        }
+      })
+      .then (data => {
+        if (data.Status == "Failure") {
+          alert("Error: " + data.Error)
+        }
+        else {
+          alert("Login Successful")
+          setUsername({value: "", error: ''})
+          setPassword({value: "", error: ''})
+        }
+      })
+      .catch (error => alert(error))
   }
 
   return (

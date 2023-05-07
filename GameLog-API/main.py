@@ -14,6 +14,7 @@ import encryption
 
 # Configuration settings for debug
 # TODO: Move this config to a file?
+# TODO: Generate a unique key on first run?
 database_path = "./storage/database.db"
 # Configuaration Ends
 
@@ -71,7 +72,7 @@ def read_root():
 def read_item(item_id: int, q: Union[str, None] = None):
     return {"item_id": item_id, "q": q}
 
-@app.post("/accounts")
+@app.post("/accounts", summary="Request the creation of a new account.")
 def new_account(account: AccountCreate):
     result = database.create_account(account.email, account.username, encryption.hash_password(account.password), "User")
     if result == "EmailAlreadyExists":
@@ -91,10 +92,12 @@ def retrieve_account(email, password):
 def get_login_token():
     return {"Hello": "World"}
 
-@app.post("/login")
+@app.post("/login", summary="Login using a username and password")
 def login(account: AccountLogin):
     id = database.verify_login_by_username(account.username, encryption.hash_password(account.password))
 
     if id != False:
         login_token = database.generate_login_token(id)
         return {"Status": "Success", "Token": str(login_token)}
+    else:
+        return {"Status": "Failure", "Error": "Username or Password incorrect."}
