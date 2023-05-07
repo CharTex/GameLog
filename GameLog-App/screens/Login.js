@@ -32,7 +32,25 @@ export default function LoginScreen({ navigation }) {
     ip = "http://10.0.2.2:8000/"
   }
 
+  function validateUsername() {
+    if (username.value.length <= 3) {
+      alert("Username must be more than 3 characters")
+      return false
+    }   
+    // Disallow special characters to avoid SQL Injection.
+    const onlyLettersPattern = /^[a-z0-9]+$/i;
+    if (! /^[a-z0-9]+$/i.test(username.value)) {
+      alert("Username cannot contain special characters!")
+      return false
+    
+    }
+    return true
+  }
+
   const login = async () => {
+    if (!validateUsername) {
+      return false
+    }
     const response = await fetch(ip + "login", {
       method: 'POST',
       headers: {
