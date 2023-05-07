@@ -69,20 +69,6 @@ class DBManager():
             self.connection.commit()
         except Exception as e:
             print(f"Alert: {e}. Continuting...")
-
-        try:
-            cursor.execute("""CREATE TABLE login_tokens (
-            id         INTEGER      PRIMARY KEY AUTOINCREMENT,
-            account_id              REFERENCES accounts (id) 
-                            NOT NULL,
-            access_token TEXT (256) NOT NULL,
-            date_created INTEGER,
-            expiry_date  INTEGER    NOT NULL
-            );""")
-            self.connection.commit()
-        except Exception as e:
-            print(f"Alert: {e}. Continuting...")
-
         try:
             cursor.execute("""CREATE TABLE reviews (
             id         INTEGER     PRIMARY KEY AUTOINCREMENT,
@@ -172,9 +158,5 @@ class DBManager():
             print(e)
             return "UnknownError"
         return True
-
-    def generate_login_token(self, id):
-        return
-
 
     

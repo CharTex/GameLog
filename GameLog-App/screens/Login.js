@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useState } from 'react'
 
-import { AsyncStorage } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import {
   StyleSheet,
@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
-  Text
+  Text,
 } from "react-native";
 
 import { NativeBaseProvider} from "native-base";
@@ -51,16 +51,16 @@ export default function LoginScreen({ navigation }) {
       return false
     }
 
+    let post_string = "grant_type=&username=" + username.value + 
+    "&password=" + password.value + "&scope=&client_id=&client_secret="
+    alert(post_string)
       fetch(ip + "login", {
         method: 'POST',
         headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
+          "accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded"
         },
-        body: JSON.stringify({
-          "username": username.value,
-          "password": password.value
-        })
+        body: post_string
       }).then(response => {
         if (response.ok) {
           return response.json()
@@ -80,6 +80,24 @@ export default function LoginScreen({ navigation }) {
           alert("Login Successful")
           setUsername({value: "", error: ''})
           setPassword({value: "", error: ''})
+
+          // Save the tokens to unencrypted local storage.
+          try {
+            console.log(data.access_token)
+            AsyncStorage.setItem(
+              "access_token",
+              data.access_token
+            )
+
+            console.log(data.refresh_token)
+            AsyncStorage.setItem(
+              "refresh_token",
+              data.refresh_token
+            )
+          }
+          catch (error) {
+            alert("Unknown Error Occured. Try Again Later")
+          }
         }
       })
       .catch (error => alert(error))
@@ -91,11 +109,11 @@ export default function LoginScreen({ navigation }) {
         <Text style={styles.title}> GameLog</Text>
         <Text style={styles.inputTitle}>Username:</Text>
         <View style={styles.inputView}>
-          <TextInput textAlign="center" style={styles.inputText} onChangeText={(text) => setUsername({ value: text, error: '' })} />
+          <TextInput textAlign="center" style={styles.inputText} value={username.value} onChangeText={(text) => setUsername({ value: text, error: '' })} />
         </View>
         <Text style={styles.inputTitle}>Password:</Text>
         <View style={styles.inputView}>
-          <TextInput style={styles.inputText} secureTextEntryplaceholder="Password" secureTextEntry placeholderTextColor="#003f5c" onChangeText={(text) => setPassword({ value: text, error: '' })} />
+          <TextInput style={styles.inputText} secureTextEntryplaceholder="Password" value={password.value} secureTextEntry placeholderTextColor="#003f5c" onChangeText={(text) => setPassword({ value: text, error: '' })} />
         </View>
         <TouchableOpacity style={styles.loginBtn} onPress={login}>
           <Text style={styles.loginText}>LOGIN </Text>

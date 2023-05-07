@@ -1,9 +1,11 @@
 # File Name: Main.py
 # File Description: Entrypoint for the API server. Uses FastAPI.
 
-from typing import Union
+from typing import Annotated, Union
 
-from fastapi import FastAPI
+from fastapi import FastAPI, status, HTTPException, Depends
+from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from pydantic import BaseModel
@@ -11,10 +13,10 @@ from pydantic import EmailStr
 
 from DBManager import DBManager
 import encryption
+import jwt
 
 # Configuration settings for debug
 # TODO: Move this config to a file?
-# TODO: Generate a unique key on first run?
 database_path = "./storage/database.db"
 # Configuaration Ends
 
@@ -92,12 +94,25 @@ def retrieve_account(email, password):
 def get_login_token():
     return {"Hello": "World"}
 
-@app.post("/login", summary="Login using a username and password")
-def login(account: AccountLogin):
-    id = database.verify_login_by_username(account.username, encryption.hash_password(account.password))
+# @app.post("/login", summary="Login using a username and password")
+# def login(account: AccountLogin):
+#     id = database.verify_login_by_username(account.username, encryption.hash_password(account.password))
+
+#     if id != False:
+#         login_token = database.generate_login_token(id)
+#         return {"Status": "Success", "Token": str(login_token)}
+#     else:
+#         return {"Status": "Failure", "Error": "Username or Password incorrect."}
+
+
+@app.post("/login", summary="Get the access tokens using a username and password")
+def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+    id = database.verify_login_by_username(form_data.username, encryption.hash_password(form_data.password))
 
     if id != False:
-        login_token = database.generate_login_token(id)
-        return {"Status": "Success", "Token": str(login_token)}
+        return {"Status": "Success",
+                 "access_token": jwt.create_access_token(form_data.username),
+                   "refresh_token": jwt.create_refresh_token(form_data.username)}
     else:
         return {"Status": "Failure", "Error": "Username or Password incorrect."}
+
