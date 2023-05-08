@@ -71,6 +71,7 @@ export default function LoginScreen({ navigation }) {
 
     if (!password.value == confirmPassword.value) {
       alert("Passwords are not the same.")
+      return false
     }
     return true
   }
@@ -102,6 +103,12 @@ export default function LoginScreen({ navigation }) {
       }
       else if (response.status === 401) {
         return Promise.reject("New accounts temporarily unavailable. Please try again later.")
+      }
+      else if (response.status === 500) {
+        return Promise.reject("Server-Side verification error. Contact a Systems Administrator")
+      }
+      else if (response.status === 409) {
+        return Promise.reject("Username or Email already in use.")
       }
       else {
         return Promise.reject("Could not connect to server. Try again later.")

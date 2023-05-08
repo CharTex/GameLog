@@ -1,16 +1,13 @@
 # File Name: Main.py
 # File Description: Entrypoint for the API server. Uses FastAPI.
 
-# TODO: CHANGE THE NAME OF CUSTOMJWT
-
-from typing import Annotated, Union
-from datetime import datetime, timedelta
+from typing import Annotated
+from datetime import timedelta
+import re
 
 from fastapi import FastAPI, status, HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
-from jose import JWTError, jwt
 
 from DBManager import DBManager
 import encryption
@@ -26,6 +23,15 @@ database = DBManager(database_path)
 
 def get_database():
     return database
+
+def email_verify(email):
+        regex = "^[a-zA-Z0-9-_]+@[a-zA-Z0-9]+\.[a-z]{1,3}$"
+        if re.match(regex, email):
+            return True
+        return False
+
+def password_verify(password):
+    return True
 
 if database.get_connected():
     app = FastAPI()
@@ -49,11 +55,29 @@ def Login():
 
 @app.post("/accounts", summary="Request the creation of a new account.")
 def new_account(account: models.AccountCreate):
+    # Creates a new account on the server.
+
+    # Server-side validation of email and passwords
+    if not email_verify(account.email) or not password_verify(account.password):
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Email or Password validation failed.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     result = database.create_account(account.email, account.username, encryption.hash_password(account.password), "User")
     if result == "EmailAlreadyExists":
-        return {"Status": "Failure", "Error": "Email Already Exists"}
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Email Already Exists",
+            headers={"WWW-Authenticate": "Bearer", "Detail": "Username Already Exists"},
+        )
     if result == "UsernameAlreadyExists":
-        return {"Status": "Failure", "Error": "Username Already Exists"}
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Username Already Exists",
+            headers={"WWW-Authenticate": "Bearer", "Detail": "Username Already Exists"},
+        )
     if result == "Unknown Error":
         return {"Status": "Failure", "Error": "Unknown Error. Try Again Later"}
     else:

@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from pydantic import EmailStr
 from typing import Union
 
 class Token(BaseModel):

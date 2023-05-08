@@ -4,6 +4,8 @@
 import sqlite3
 import os
 import time
+import re
+
 import encryption
 
 class DBManager():
@@ -76,7 +78,8 @@ class DBManager():
             account_id INTEGER     REFERENCES accounts (id) ON DELETE NO ACTION,
             rating     INTEGER     NOT NULL,
             comment    TEXT (8192),
-            location   TEXT (512) 
+            location   TEXT (512),
+            public     INTEGER
             );""")
             self.connection.commit()
         except Exception as e:
@@ -93,7 +96,6 @@ class DBManager():
         rows = cursor.fetchall()
         if len(rows) != 0:
             if encryption.verify_password(password, rows[0][3]):
-                print(f"Successful Login from user id: {rows[0][0]}")
                 return rows[0][0]
         
         return False
@@ -146,7 +148,6 @@ class DBManager():
 
     def create_account(self, email, username, password_hash, account_type):
         # Creates an account in the database.
-        # TODO: Duplicate Checking Error Codes.
 
         if (self.lookup_account_by_email(email)):
             return "EmailAlreadyExists"

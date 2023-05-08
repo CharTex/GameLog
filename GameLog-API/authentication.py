@@ -1,14 +1,10 @@
-from passlib.context import CryptContext
-import os
 from datetime import datetime, timedelta
-from jose import jwt
 
-from typing import Annotated, Union, Any
+from typing import Annotated, Union
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 
-from pydantic import ValidationError
 import models
 import main
 
@@ -43,6 +39,7 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     # Checks the payload for its authenticity.
     # First it decodes the token and checks it.
     # Then it ensures the account actually exists.
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
