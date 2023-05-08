@@ -70,15 +70,14 @@ export default function LoginScreen({ navigation }) {
         else if (response.status === 422) {
           return Promise.reject("Incorrect data sent? Contact a Systems Administrator.")
         }
+        else if (response.status === 401) {
+          return Promise.reject("Incorrect Username or Password.")
+        }
         else {
           return Promise.reject("Could not connect to server. Try again later.")
         }
       })
       .then (data => {
-        if (data.Status == "Failure") {
-          alert("Error: " + data.Error)
-        }
-        else {
           alert("Login Successful")
           setUsername({value: "", error: ''})
           setPassword({value: "", error: ''})
@@ -89,19 +88,12 @@ export default function LoginScreen({ navigation }) {
               "access_token",
               data.access_token
             )
-
-            console.log(data.refresh_token)
-            AsyncStorage.setItem(
-              "refresh_token",
-              data.refresh_token
-            )
-
+            console.log(AsyncStorage.getItem("access_token"))
             navigation.navigate("MainNavigation", {screen: "UserHome"})
           }
           catch (error) {
             alert("Unknown Error Occured. Try Again Later")
           }
-        }
       })
       .catch (error => alert(error))
   }

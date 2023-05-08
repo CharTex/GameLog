@@ -101,22 +101,20 @@ export default function LoginScreen({ navigation }) {
         else if (response.status === 422) {
           return Promise.reject("Incorrect data sent? Contact a Systems Administrator.")
         }
+        else if (response.status === 401) {
+          return Promise.reject("New accounts temporarily unavailable. Please try again later.")
+        }
         else {
           return Promise.reject("Could not connect to server. Try again later.")
         }
       })
       .then (data => {
-        if (data.Status == "Failure") {
-          alert("Error: " + data.Error)
-        }
-        else {
           alert("Account Created. Please log in.")
           setEmail({value: "", error: ''})
           setUsername({value: "", error: ''})
           setPassword({value: "", error: ''})
           setConfirmPassword({value: "", error: ''})
           navigation.navigate("Login")
-        }
       })
       .catch (error => alert(error))
   }
