@@ -4,6 +4,7 @@
 import sqlite3
 import os
 import time
+import encryption
 
 class DBManager():
 
@@ -81,20 +82,21 @@ class DBManager():
         except Exception as e:
             print(f"Alert: {e}. Continuting...")
 
-    def verify_login_by_username(self, username, password_hash):
-        # Verifies login information using username and password hash.
+    def verify_login_by_username(self, username, password):
+        # Verifies login information using username and password.
         # Returns Account ID if valid login. Returns False if not.
         cursor = self.connection.cursor()
-        cursor.execute(f"""SELECT * FROM accounts WHERE username='{username}' AND password_hash='{password_hash}'""")
+        cursor.execute(f"""SELECT * FROM accounts WHERE username='{username}'""")
         
         # Check if any data was retrieved.
         # If yes, get the first entry.
         rows = cursor.fetchall()
         if len(rows) != 0:
-            print(f"Successful Login from user id: {rows[0][0]}")
-            return rows[0][0]
-        else:
-            return False
+            if encryption.verify_password(password, rows[0][3]):
+                print(f"Successful Login from user id: {rows[0][0]}")
+                return rows[0][0]
+        
+        return False
 
     def verify_login_by_email(self, email, password_hash):
         # Verifies login information using email and password hash.
@@ -137,6 +139,10 @@ class DBManager():
             return rows[0][0]
         else:
             return False
+        
+    def get_account_info_by_id(self, id):
+        cursor = self.connection.cursor()
+        cursor.execute(f"""SELECT * FROM accounts WHERE id='{id}'""")
 
     def create_account(self, email, username, password_hash, account_type):
         # Creates an account in the database.
