@@ -50,12 +50,12 @@ else:
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-def Login():
-    return NotImplementedError
-
 @app.post("/accounts", summary="Request the creation of a new account.")
 def new_account(account: models.AccountCreate):
     # Creates a new account on the server.
+
+    account.username = account.username.lower()
+    account.email = account.email.lower()
 
     # Server-side validation of email and passwords
     if not email_verify(account.email) or not password_verify(account.password):
@@ -65,7 +65,7 @@ def new_account(account: models.AccountCreate):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    result = database.create_account(account.email, account.username, encryption.hash_password(account.password), "User")
+    result = database.create_account(account.email, account.username, encryption.hash_password(account.password), "user")
     if result == "EmailAlreadyExists":
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -85,6 +85,9 @@ def new_account(account: models.AccountCreate):
 
 @app.post("/login", summary="Get the access tokens using a username and password")
 def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+
+    form_data.username = form_data.username.lower()
+    
     id = database.verify_login_by_username(form_data.username, form_data.password)
 
     if id != False:
