@@ -22,6 +22,8 @@ export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState({ value: '', error: '' });
   const [password, setPassword] = useState({ value: '', error: '' });
 
+  const [token, setToken] = useState(0)
+
   // If running on android, use a loopback IP.
   let ip = ""
   if (Platform.OS == 'web') {
@@ -46,7 +48,7 @@ export default function LoginScreen({ navigation }) {
     return true
   }
 
-  const login = async () => {
+  const login = async (value) => {
     // Validate fields
     if (!validateUsername()) {
       return false
@@ -83,20 +85,35 @@ export default function LoginScreen({ navigation }) {
         setUsername({ value: "", error: '' })
         setPassword({ value: "", error: '' })
 
-        // Save the tokens to unencrypted local storage.
-        try {
-          AsyncStorage.setItem(
-            "access_token",
-            data.access_token
-          )
-          console.log(AsyncStorage.getItem("access_token"))
-          navigation.navigate("MainNavigation", { screen: "UserHome" })
-        }
-        catch (error) {
-          alert("Unknown Error Occured. Try Again Later")
-        }
+        saveToken(data.access_token)
+        console.log("Should be after")
+
+        let value = getToken().then(
+          console.log(token)
+        )
+
+        navigation.navigate("MainNavigation", { screen: "UserHome" })
       })
       .catch(error => alert(error))
+  }
+
+  async function saveToken(token) {
+    // Save the tokens to unencrypted local storage.
+    try {
+      console.log(token)
+      AsyncStorage.setItem(
+        "@access_token",
+        token
+      )
+    }
+    catch (error) {
+      alert("Unknown Error Occured. Try Again Later")
+    }
+  }
+
+  async function getToken() {
+    var value = await AsyncStorage.getItem('@access_token');
+    setToken(value)
   }
 
   return (

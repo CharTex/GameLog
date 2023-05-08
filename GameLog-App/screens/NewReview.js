@@ -2,7 +2,7 @@ import * as React from 'react'
 
 import { useState, useEffect } from 'react'
 
-import { AsyncStorage } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import {
     StyleSheet,
@@ -36,6 +36,8 @@ export default function NewReview({ navigation }) {
     const [errorMsg, setErrorMsg] = useState(null);
     const [locationPermission, setLocationPermission] = useState(false)
     const [isCoords, setCoords] = useState()
+    const [token, setToken] = useState(0)
+
 
     // If running on android, use a loopback IP.
     let ip = ""
@@ -46,9 +48,17 @@ export default function NewReview({ navigation }) {
         ip = "http://10.0.2.2:8000/"
     }
 
+    // onLoad = async () => {
+    //     try {
+    //         const storedValue = await AsyncStorage.getItem("@access_token");
+    //         setToken(storedValue);
+    //     } catch (error) {
+    //         Alert.alert('Error', 'There was an error.')
+    //     }
+    // }
+
     useEffect(() => {
         const getLocationPermissions = async () => {
-            alert("Checked")
         let { status } = await Location.requestForegroundPermissionsAsync();
           if ( 'granted' === status ) {
             await setLocationPermission( true );
@@ -60,7 +70,40 @@ export default function NewReview({ navigation }) {
       }, [])
 
     function saveReview() {
+        // Get the token from local storage.
+        getToken()
+
+        fetch(ip + "me", {
+            method: 'GET',
+            headers: {
+              "accept": "application/json",
+              "Content-Type": "application/x-www-form-urlencoded",
+              Authorization: "Bearer " + token
+            },
+          }).then(response => {
+            if (response.ok) {
+              return response.json()
+            }
+            else if (response.status === 422) {
+              return Promise.reject("Incorrect data sent? Contact a Systems Administrator.")
+            }
+            else if (response.status === 401) {
+              return Promise.reject("Invalid/Expired Authentication. Please log in again.")
+            }
+            else {
+              return Promise.reject("Could not connect to server. Try again later.")
+            }
+          })
+            .then(data => {
+                console.log(data)
+            })
+            .catch(error => alert(error))
     }
+
+    async function getToken() {
+        var value = await AsyncStorage.getItem('@access_token');
+        setToken(value)
+      }
 
     function getLocation(checkStatus) {
         
@@ -117,7 +160,6 @@ export default function NewReview({ navigation }) {
                 </View>
                 <BouncyCheckbox
                     style={{ marginTop: 16 }}
-                    ref={(ref) => (bouncyCheckboxRef = ref)}
                     isChecked={locationCheckboxState}
                     text="Submit Location Data?"
                     disableBuiltInState
@@ -129,7 +171,6 @@ export default function NewReview({ navigation }) {
                 />
                 <BouncyCheckbox
                     style={{ marginTop: 16 }}
-                    ref={(ref) => (bouncyCheckboxRef = ref)}
                     isChecked={publicCheckboxState}
                     text="Make Review Public?"
                     disableBuiltInState
