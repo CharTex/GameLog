@@ -65,6 +65,7 @@ def new_account(account: models.AccountCreate):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    # Create the account. 
     result = database.create_account(account.email, account.username, encryption.hash_password(account.password), "user")
     if result == "EmailAlreadyExists":
         raise HTTPException(
@@ -79,7 +80,11 @@ def new_account(account: models.AccountCreate):
             headers={"WWW-Authenticate": "Bearer", "Detail": "Username Already Exists"},
         )
     if result == "Unknown Error":
-        return {"Status": "Failure", "Error": "Unknown Error. Try Again Later"}
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Username Already Exists",
+            headers={"WWW-Authenticate": "Bearer", "Detail": "Username Already Exists"},
+        )
     else:
         return {"Status": "Success"}
 
@@ -104,8 +109,21 @@ def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-@app.get("/users/me/", response_model=models.AccountInfo)
+@app.get("/me", response_model=models.AccountInfo, summary="Get information about the current logged in user.")
 def read_users_me(
     current_user: Annotated[models.Account, Depends(authentication.get_current_user)]
 ):
     return database.get_account_info_by_id(current_user)
+
+@app.post("/reviews", summary="Request the creation of a new review.")
+def create_review (current_user: Annotated[models.Account, Depends(authentication.get_current_user)], review: models.ReviewCreate):
+    return
+
+@app.get("/reviews", summary="Get all publicly available reviews.")
+def get_all_reviews(current_user: Annotated[models.Account, Depends(authentication.get_current_user)]):
+    return
+
+@app.get("/reviews/{id}", summary="Get all of a user's reviews.")
+def get_users_reviews(current_user: Annotated[models.Account, Depends(authentication.get_current_user)]):
+    # Users can only access their own reviews. Admins can access everyones.
+    return

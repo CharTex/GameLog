@@ -39,6 +39,8 @@ class Review(BaseModel):
 
 class ReviewCreate(Review):
     review_score: int
+    comment: str
+    public: str
 
 class ReviewEdit(Review):
     review_score: int
