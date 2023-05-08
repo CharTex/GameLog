@@ -13,6 +13,14 @@ class Account(BaseModel):
     username: str
     password: str
 
+class AccountInfo(BaseModel):
+    id: str
+    email: str
+    username: str
+    date_created: str
+    last_login: str
+    account_type: str
+
 class AccountCreate(Account):
     username: str
     password: str

@@ -87,10 +87,11 @@ def new_account(account: models.AccountCreate):
 def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
 
     form_data.username = form_data.username.lower()
-    
+
     id = database.verify_login_by_username(form_data.username, form_data.password)
 
     if id != False:
+        database.update_last_login_by_id(id)
         access_token_expires = timedelta(minutes=authentication.ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = authentication.create_access_token(
             data={"sub": form_data.username}, expires_delta=access_token_expires
@@ -103,9 +104,8 @@ def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-@app.get("/users/me/", response_model=models.Account)
+@app.get("/users/me/", response_model=models.AccountInfo)
 def read_users_me(
     current_user: Annotated[models.Account, Depends(authentication.get_current_user)]
 ):
-    print(current_user)
-    return {"email": "bob@bob.com", "username": "bob", "password": "hello"}
+    return database.get_account_info_by_id(current_user)
