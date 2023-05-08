@@ -80,6 +80,8 @@ class DBManager:
                 """CREATE TABLE reviews (
             id         INTEGER     PRIMARY KEY AUTOINCREMENT,
             account_id INTEGER     REFERENCES accounts (id) ON DELETE NO ACTION,
+            game_name  TEXT (512)  NOT NULL,
+            game_developer  TEXT (512),
             rating     INTEGER     NOT NULL,
             comment    TEXT (8192),
             location   TEXT (512),
