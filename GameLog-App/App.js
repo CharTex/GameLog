@@ -3,13 +3,19 @@ import { Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import {
   LoginScreen,
   RegisterScreen,
+  UserHome,
+  AllReviews,
+  NewReview
 } from "./screens"
 
 const LoginTabs = createMaterialBottomTabNavigator();
+const MainTabs = createMaterialBottomTabNavigator();
+const NavigationStack = createNativeStackNavigator();
 
 function LoginNavbar() {
   return (
@@ -43,10 +49,61 @@ function LoginNavbar() {
   );
 }
 
+function MainNavbar() {
+  return (
+    <MainTabs.Navigator
+      initialRouteName="Main"
+      activeColor="red"
+      labelStyle={{ fontSize: 12 }}
+      style={{ backgroundColor: 'tomato' }}
+    >
+      <MainTabs.Screen
+        name="Main"
+        component={UserHome}
+        options={{
+          tabBarLabel: 'Home',
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="home" color={color} size={26} />
+          ),
+        }}
+      />
+      <MainTabs.Screen
+        name="AllReviews"
+        component={AllReviews}
+        options={{
+          tabBarLabel: 'All Reviews',
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="bell" color={color} size={26} />
+          ),
+        }}
+      />
+      <MainTabs.Screen
+        name="NewReview"
+        component={NewReview}
+        options={{
+          tabBarLabel: 'New Review',
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="bell" color={color} size={26} />
+          ),
+        }}
+      />
+    </MainTabs.Navigator>
+  );
+}
+
 export default function App() {
   return (
+    
     <NavigationContainer>
-      <LoginNavbar />
+      <NavigationStack.Navigator
+      initialRouteName="LoginNavigation"
+  screenOptions={{
+    headerShown: false
+  }}
+>
+  <NavigationStack.Screen name="LoginNavigation" component={LoginNavbar} />
+  <NavigationStack.Screen name="MainNavigation" component={MainNavbar} />
+</NavigationStack.Navigator>
     </NavigationContainer>
   );
 }

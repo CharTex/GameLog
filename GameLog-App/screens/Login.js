@@ -51,9 +51,11 @@ export default function LoginScreen({ navigation }) {
       return false
     }
 
+    // Generate the string that will be sent to the API Server.
     let post_string = "grant_type=&username=" + username.value + 
     "&password=" + password.value + "&scope=&client_id=&client_secret="
-    alert(post_string)
+
+
       fetch(ip + "login", {
         method: 'POST',
         headers: {
@@ -83,7 +85,6 @@ export default function LoginScreen({ navigation }) {
 
           // Save the tokens to unencrypted local storage.
           try {
-            console.log(data.access_token)
             AsyncStorage.setItem(
               "access_token",
               data.access_token
@@ -94,6 +95,8 @@ export default function LoginScreen({ navigation }) {
               "refresh_token",
               data.refresh_token
             )
+
+            navigation.navigate("MainNavigation", {screen: "UserHome"})
           }
           catch (error) {
             alert("Unknown Error Occured. Try Again Later")
