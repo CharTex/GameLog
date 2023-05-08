@@ -12,12 +12,10 @@ from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from jose import JWTError, jwt
 
-from pydantic import BaseModel
-from pydantic import EmailStr
-
 from DBManager import DBManager
 import encryption
-import jwt as customjwt
+import authentication
+import models
 
 # Configuration settings for debug
 # TODO: Move this config to a file?
@@ -25,6 +23,9 @@ database_path = "./storage/database.db"
 # Configuaration Ends
 
 database = DBManager(database_path)
+
+def get_database():
+    return database
 
 if database.get_connected():
     app = FastAPI()
@@ -43,65 +44,11 @@ else:
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-class TokenData(BaseModel):
-    username: Union[str, None] = None
-
-class Account(BaseModel):
-    email: str
-    username: str
-    password: str
-
-class AccountCreate(Account):
-    username: str
-    password: str
-
-class AccountEdit(Account):
-    username: str
-    password: str
-
-class AccountLogin(BaseModel):
-    username: str
-    password: str
-
-class Review(BaseModel):
-    game_name: str
-    game_developer: str
-
-class ReviewCreate(Review):
-    review_score: int
-
-class ReviewEdit(Review):
-    review_score: int
-
-def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, customjwt.JWT_SECRET_KEY, algorithms=[customjwt.ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-        token_data = TokenData(username=username)
-    except JWTError as e:
-        print(e)
-        raise credentials_exception
-    user = database.lookup_account_by_username(username=token_data.username)
-    if user is None:
-        raise credentials_exception
-    return user
-
 def Login():
     return NotImplementedError
 
 @app.post("/accounts", summary="Request the creation of a new account.")
-def new_account(account: AccountCreate):
+def new_account(account: models.AccountCreate):
     result = database.create_account(account.email, account.username, encryption.hash_password(account.password), "User")
     if result == "EmailAlreadyExists":
         return {"Status": "Failure", "Error": "Email Already Exists"}
@@ -117,8 +64,8 @@ def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     id = database.verify_login_by_username(form_data.username, form_data.password)
 
     if id != False:
-        access_token_expires = timedelta(minutes=customjwt.ACCESS_TOKEN_EXPIRE_MINUTES)
-        access_token = customjwt.create_access_token(
+        access_token_expires = timedelta(minutes=authentication.ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = authentication.create_access_token(
             data={"sub": form_data.username}, expires_delta=access_token_expires
         )
         return {"access_token": access_token, "token_type": "bearer"}
@@ -129,9 +76,9 @@ def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-@app.get("/users/me/", response_model=Account)
+@app.get("/users/me/", response_model=models.Account)
 def read_users_me(
-    current_user: Annotated[Account, Depends(get_current_user)]
+    current_user: Annotated[models.Account, Depends(authentication.get_current_user)]
 ):
     print(current_user)
     return {"email": "bob@bob.com", "username": "bob", "password": "hello"}
