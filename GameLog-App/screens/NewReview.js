@@ -32,9 +32,6 @@ export default function NewReview({ navigation }) {
     const [locationCheckboxState, setLocationCheckboxState] = React.useState(false);
     const [publicCheckboxState, setPublicCheckboxState] = React.useState(false);
 
-    const [location, setLocation] = useState(null);
-    const [errorMsg, setErrorMsg] = useState(null);
-    const [locationPermission, setLocationPermission] = useState(false)
     const [isCoords, setCoords] = useState()
     const [token, setToken] = useState(0)
 
@@ -61,7 +58,6 @@ export default function NewReview({ navigation }) {
         const getLocationPermissions = async () => {
         let { status } = await Location.requestForegroundPermissionsAsync();
           if ( 'granted' === status ) {
-            await setLocationPermission( true );
             let { coords: { latitude, longitude } } = await Location.getCurrentPositionAsync({})
             setCoords({ latitude, longitude })
           }
@@ -70,16 +66,41 @@ export default function NewReview({ navigation }) {
       }, [])
 
     function saveReview() {
-        // Get the token from local storage.
-        getToken()
 
-        fetch(ip + "me", {
-            method: 'GET',
+        getToken().then((token) => {
+            console.log("Retrieved Value: " + token)
+            let locationString = "None"
+
+        if (isCoords != undefined && locationCheckboxState == true) {
+            locationString = isCoords.latitude + "," + isCoords.longitude
+        }
+
+        let temp = JSON.stringify({
+            "game_name": gameName.value,
+            "game_developer": gameDeveloper.value,
+            "review_score": rating,
+            "comment": comment.value,
+            "location": locationString,
+            "public": publicCheckboxState
+          })
+
+        console.log(temp)
+
+        fetch(ip + "reviews", {
+            method: 'POST',
             headers: {
               "accept": "application/json",
-              "Content-Type": "application/x-www-form-urlencoded",
+              "Content-Type": "application/json",
               Authorization: "Bearer " + token
             },
+            body: JSON.stringify({
+                "game_name": gameName.value,
+                "game_developer": gameDeveloper.value,
+                "rating": rating,
+                "comment": comment.value,
+                "location": locationString,
+                "public": publicCheckboxState
+                  })
           }).then(response => {
             if (response.ok) {
               return response.json()
@@ -95,15 +116,39 @@ export default function NewReview({ navigation }) {
             }
           })
             .then(data => {
-                console.log(data)
+                alert("Review Created!")
+                setGameName({ value: "", error: '' })
+                setGameDeveloper({ value: "", error: '' })
+                setRating(0)
+                setComment({ value: "", error: '' })
+                setLocationCheckboxState(false)
+                setPublicCheckboxState(false)
+                navigation.navigate("UserHome")
             })
             .catch(error => alert(error))
+          }
+        )
     }
 
-    async function getToken() {
-        var value = await AsyncStorage.getItem('@access_token');
-        setToken(value)
+    const getToken = async () => {
+        // Retrieve the login token from unencrypted local storage.
+        try {
+          const value = await AsyncStorage.getItem('@storage_Key')
+          if(value !== null) {
+            return value
+          }
+        } catch(e) {
+          alert("Error reading local storage!")
+          return false
+        }
       }
+
+    function invalidCharactersTest(toTest) {
+        // Function to remove characters like "" to avoid SQL injection.
+        if (toTest.contains('"') || toTest.contains("'")) {
+            return false
+        }
+    }
 
     function getLocation(checkStatus) {
         

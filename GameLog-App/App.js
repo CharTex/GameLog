@@ -52,13 +52,13 @@ function LoginNavbar() {
 function MainNavbar() {
   return (
     <MainTabs.Navigator
-      initialRouteName="Main"
+      initialRouteName="UserHome"
       activeColor="red"
       labelStyle={{ fontSize: 12 }}
       style={{ backgroundColor: 'tomato' }}
     >
       <MainTabs.Screen
-        name="Main"
+        name="UserHome"
         component={UserHome}
         options={{
           tabBarLabel: 'Home',

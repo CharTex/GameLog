@@ -38,9 +38,10 @@ class Review(BaseModel):
     game_developer: str
 
 class ReviewCreate(Review):
-    review_score: int
+    rating: int
     comment: str
-    public: str
+    location: str
+    public: bool
 
 class ReviewEdit(Review):
     review_score: int

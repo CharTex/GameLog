@@ -194,10 +194,26 @@ class DBManager:
 
         cursor = self.connection.cursor()
         try:
-            print(password_hash)
             cursor.execute(
                 f"""INSERT INTO accounts (email, username, password_hash, account_type, date_created)
                   VALUES ('{email}', '{username}', '{password_hash}', '{account_type}', '{time.time()}')"""
+            )
+            self.connection.commit()
+        except Exception as e:
+            print("Unknown Error")
+            print(e)
+            return "UnknownError"
+        return True
+    
+    def create_review(self, account_id, game_name, game_developer, rating, comment, location, public):
+        # Creates a review in the database.
+        # Passes Safe Query Parameters to avoid SQL Injection
+        cursor = self.connection.cursor()
+        try:
+            cursor.execute(
+                f"""INSERT INTO reviews (account_id, game_name, game_developer, rating, comment, location, public)
+                VALUES ({account_id}, '{game_name}', '{game_developer}', {rating},
+                  '{comment}', '{location}', '{public}')"""
             )
             self.connection.commit()
         except Exception as e:

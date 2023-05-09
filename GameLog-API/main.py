@@ -79,11 +79,11 @@ def new_account(account: models.AccountCreate):
             detail="Username Already Exists",
             headers={"WWW-Authenticate": "Bearer", "Detail": "Username Already Exists"},
         )
-    if result == "Unknown Error":
+    if result == "UnknownError":
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Username Already Exists",
-            headers={"WWW-Authenticate": "Bearer", "Detail": "Username Already Exists"},
+            headers={"WWW-Authenticate": "Bearer", "Detail": "Server Error"},
         )
     else:
         return {"Status": "Success"}
@@ -116,8 +116,9 @@ def read_users_me(
     return database.get_account_info_by_id(current_user)
 
 @app.post("/reviews", summary="Request the creation of a new review.")
-def create_review (current_user: Annotated[models.Account, Depends(authentication.get_current_user)], review: models.ReviewCreate):
-    return
+def create_review (current_user: Annotated[models.ReviewCreate, Depends(authentication.get_current_user)], review: models.ReviewCreate):
+    database.create_review(current_user, review.game_name, review.game_developer, review.rating, review.comment,
+                           review.location, review.public)
 
 @app.get("/reviews", summary="Get all publicly available reviews.")
 def get_all_reviews(current_user: Annotated[models.Account, Depends(authentication.get_current_user)]):

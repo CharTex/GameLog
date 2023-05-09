@@ -33,6 +33,31 @@ export default function LoginScreen({ navigation }) {
     ip = "http://10.0.2.2:8000/"
   }
 
+  const storeToken = async (value) => {
+    // Save the login token to unencrypted local storage.
+    try {
+      await AsyncStorage.setItem('@storage_Key', value)
+      return true
+    } catch (e) {
+      alert("Error saving to local storage!")
+      return false
+    }
+  }
+
+  const getToken = async () => {
+    // Retrieve the login token from unencrypted local storage.
+    try {
+      const value = await AsyncStorage.getItem('@storage_Key')
+      if(value !== null) {
+        return value
+      }
+    } catch(e) {
+      alert("Error reading local storage!")
+      return false
+    }
+  }
+
+
   function validateUsername() {
     if (username.value.length <= 3) {
       alert("Username must be more than 3 characters")
@@ -41,7 +66,7 @@ export default function LoginScreen({ navigation }) {
     // Disallow special characters to avoid SQL Injection.
     const onlyLettersPattern = /^[a-z0-9]+$/i;
     if (! /^[a-z0-9]+$/i.test(username.value)) {
-      alert("Username cannot contain special characters!")
+      alert("Username cannot contain special characters or spaces!")
       return false
 
     }
@@ -85,35 +110,19 @@ export default function LoginScreen({ navigation }) {
         setUsername({ value: "", error: '' })
         setPassword({ value: "", error: '' })
 
-        saveToken(data.access_token)
-        console.log("Should be after")
+        // Save the token
+        storeToken(data.access_token)
 
-        let value = getToken().then(
-          console.log(token)
+        // Immediately get the token after to confirm it saved.
+        getToken().then((value) => {
+          console.log("Retreved Data: " + value)
+        }
         )
 
+        // Change to the main page.
         navigation.navigate("MainNavigation", { screen: "UserHome" })
       })
       .catch(error => alert(error))
-  }
-
-  async function saveToken(token) {
-    // Save the tokens to unencrypted local storage.
-    try {
-      console.log(token)
-      AsyncStorage.setItem(
-        "@access_token",
-        token
-      )
-    }
-    catch (error) {
-      alert("Unknown Error Occured. Try Again Later")
-    }
-  }
-
-  async function getToken() {
-    var value = await AsyncStorage.getItem('@access_token');
-    setToken(value)
   }
 
   return (
