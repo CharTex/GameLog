@@ -6,10 +6,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   StyleSheet,
   View,
-  Image,
   TextInput,
   TouchableOpacity,
-  Alert,
   Platform,
   Text,
 } from "react-native";
@@ -21,8 +19,6 @@ import { NativeBaseProvider } from "native-base";
 export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState({ value: '', error: '' });
   const [password, setPassword] = useState({ value: '', error: '' });
-
-  const [token, setToken] = useState(0)
 
   // If running on android, use a loopback IP.
   let ip = ""
@@ -115,7 +111,6 @@ export default function LoginScreen({ navigation }) {
 
         // Immediately get the token after to confirm it saved.
         getToken().then((value) => {
-          console.log("Retreved Data: " + value)
         }
         )
 

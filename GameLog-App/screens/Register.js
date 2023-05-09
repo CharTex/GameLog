@@ -4,10 +4,8 @@ import { useState } from 'react'
 import {
   StyleSheet,
   View,
-  Image,
   TextInput,
   TouchableOpacity,
-  Alert,
   Platform,
   Text,
 } from "react-native";

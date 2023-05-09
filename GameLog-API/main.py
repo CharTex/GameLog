@@ -22,16 +22,16 @@ database_path = "./storage/database.db"
 database = DBManager(database_path)
 
 def get_database():
+    # Returns a reference to the database object.
     return database
 
 def email_verify(email):
+        # Check the email against a generic email regex.
         regex = "^[a-zA-Z0-9-_]+@[a-zA-Z0-9]+\.[a-z]{1,3}$"
         if re.match(regex, email):
             return True
         return False
 
-def password_verify(password):
-    return True
 
 if database.get_connected():
     app = FastAPI()
@@ -123,11 +123,35 @@ def get_all_reviews(current_user: Annotated[models.Account, Depends(authenticati
     if account_type == "user":
         # User accounts only get public reviews with no location data.
         return database.get_all_public_reviews()
-    else:
+    elif account_type == "admin":
         # Admin accounts view all reviews + location data.
-        return
+        return database.get_all_reviews()
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 @app.get("/reviews/{id}", summary="Get all of a user's reviews.")
-def get_users_reviews(current_user: Annotated[models.Account, Depends(authentication.get_current_user)]):
+def get_users_reviews(current_user: Annotated[models.Account, Depends(authentication.get_current_user)], id):
     # Users can only access their own reviews. Admins can access everyones.
-    return
+    account_type = database.get_account_info_by_id(current_user)["account_type"]
+    if account_type != False and account_type == "user":
+        try:
+            if database.get_account_info_by_id(current_user)["id"] != int(id):
+                print("Invalid ID Match")
+                print(f"Requested ID: {id} | Login ID: {current_user}")
+            else:
+                return database.get_reviews_by_id(current_user)
+        except Exception as e:
+            print("Potential Invalid ID")
+    elif account_type != False and account_type == "admin":
+        # If admin, Return regardless of authentication.
+        return database.get_reviews_by_id(current_user)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )

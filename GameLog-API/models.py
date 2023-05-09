@@ -1,3 +1,6 @@
+# File Name: models.py
+# File Description: Holds custom pydantic models used by the FastAPI server.
+
 from pydantic import BaseModel
 from typing import Union
 

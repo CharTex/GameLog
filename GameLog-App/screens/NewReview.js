@@ -7,10 +7,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
     StyleSheet,
     View,
-    Image,
     TextInput,
     TouchableOpacity,
-    Alert,
     Platform,
     Text,
 } from "react-native";
@@ -68,7 +66,6 @@ export default function NewReview({ navigation }) {
     function saveReview() {
 
         getToken().then((token) => {
-            console.log("Retrieved Value: " + token)
             let locationString = "None"
 
         if (isCoords != undefined && locationCheckboxState == true) {

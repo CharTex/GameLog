@@ -1,19 +1,21 @@
+# File Name: authentication.py
+# File Description: Functions relating to access tokens and authenticity checking.
+
 from datetime import datetime, timedelta
 
 from typing import Annotated, Union
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
+import uuid
 
 import models
 import main
 
-# TODO: Generate a unique key on first run?
 ACCESS_TOKEN_EXPIRE_MINUTES = 60  # 30 Minutes
 REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 1 Week
 ALGORITHM = "HS256"
-JWT_SECRET_KEY = "Charmeleon"   # should be kept secret
-JWT_REFRESH_SECRET_KEY = "Charizard"    # should be kept secret
+JWT_SECRET_KEY = uuid.uuid4().hex # Generate a new JWT key when the server is restarted.
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 

@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -71,7 +70,7 @@ function MainNavbar() {
         name="AllReviews"
         component={AllReviews}
         options={{
-          tabBarLabel: 'All Reviews',
+          tabBarLabel: 'All Public Reviews',
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons name="bell" color={color} size={26} />
           ),
@@ -83,7 +82,7 @@ function MainNavbar() {
         options={{
           tabBarLabel: 'New Review',
           tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="bell" color={color} size={26} />
+            <MaterialCommunityIcons name="account-edit" color={color} size={26} />
           ),
         }}
       />

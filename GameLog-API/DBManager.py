@@ -4,8 +4,6 @@
 import sqlite3
 import os
 import time
-import re
-import json
 
 import encryption
 
@@ -170,7 +168,7 @@ class DBManager:
             }
         else:
             return False
-        
+
     def update_last_login_by_id(self, id):
         # Updates the accounts "last updated" value to the current time
         cursor = self.connection.cursor()
@@ -180,9 +178,10 @@ class DBManager:
         # If yes, use the first entry.
         rows = cursor.fetchall()
         if len(rows) != 0:
-            cursor.execute(f"""UPDATE accounts SET last_login='{time.time()}' WHERE id='{id}'""")
+            cursor.execute(
+                f"""UPDATE accounts SET last_login='{time.time()}' WHERE id='{id}'"""
+            )
             self.connection.commit()
-            
 
     def create_account(self, email, username, password_hash, account_type):
         # Creates an account in the database.
@@ -194,6 +193,7 @@ class DBManager:
             return "UsernameAlreadyExists"
 
         cursor = self.connection.cursor()
+        # Attempt to execute the SQL. Return error code if failure.
         try:
             cursor.execute(
                 f"""INSERT INTO accounts (email, username, password_hash, account_type, date_created)
@@ -205,10 +205,14 @@ class DBManager:
             print(e)
             return "UnknownError"
         return True
-    
-    def create_review(self, account_id, game_name, game_developer, rating, comment, location, public):
+
+    def create_review(
+        self, account_id, game_name, game_developer, rating, comment, location, public
+    ):
         # Creates a review in the database.
+
         cursor = self.connection.cursor()
+        # Attempt to execute the SQL. Return error code if failure.
         try:
             cursor.execute(
                 f"""INSERT INTO reviews (account_id, game_name, game_developer, rating, comment, location, public)
@@ -221,14 +225,13 @@ class DBManager:
             print(e)
             return "UnknownError"
         return True
-    
+
     def get_all_public_reviews(self):
         # Gets all reviews with a public value of True
         cursor = self.connection.cursor()
+        # Attempt to execute the SQL. Return error code if failure.
         try:
-            cursor.execute(
-                "SELECT * FROM reviews WHERE public='True'"
-            )
+            cursor.execute("SELECT * FROM reviews WHERE public='True'")
 
             # Get all public rows
             rows = cursor.fetchall()
@@ -236,13 +239,82 @@ class DBManager:
                 public_reviews = []
                 for row in rows:
                     review_username = self.get_account_info_by_id(row[1])["username"]
-                    public_reviews.append({"id": row[0], "username": review_username, "game_name": row[2], "game_developer": row[3], "rating": row[4], "comment": row[5]})
+                    public_reviews.append(
+                        {
+                            "id": row[0],
+                            "username": review_username,
+                            "game_name": row[2],
+                            "game_developer": row[3],
+                            "rating": row[4],
+                            "comment": row[5],
+                        }
+                    )
 
                 return public_reviews
-
-
         except Exception as e:
             print("Unknown Error")
             print(e)
             return "UnknownError"
-        return True
+
+    def get_reviews_by_id(self, id):
+        # Gets all reviews with a public value of True
+        cursor = self.connection.cursor()
+        # Attempt to execute the SQL. Return error code if failure.
+        try:
+            cursor.execute(f"SELECT * FROM reviews WHERE account_id={id}")
+
+            # Get all public rows
+            rows = cursor.fetchall()
+            if len(rows) != 0:
+                user_reviews = []
+                for row in rows:
+                    review_username = self.get_account_info_by_id(row[1])["username"]
+                    user_reviews.append(
+                        {
+                            "id": row[0],
+                            "username": review_username,
+                            "game_name": row[2],
+                            "game_developer": row[3],
+                            "rating": row[4],
+                            "comment": row[5],
+                            "location": row[6],
+                        }
+                    )
+
+                return user_reviews
+        except Exception as e:
+            print("Unknown Error")
+            print(e)
+            return "UnknownError"
+
+    def get_all_reviews(self):
+        # Gets all reviews + All Data
+        cursor = self.connection.cursor()
+        # Attempt to execute the SQL. Return error code if failure.
+        try:
+            cursor.execute(f"SELECT * FROM reviews")
+
+            # Get all rows
+            rows = cursor.fetchall()
+            if len(rows) != 0:
+                all_reviews = []
+                for row in rows:
+                    review_username = self.get_account_info_by_id(row[1])["username"]
+                    all_reviews.append(
+                        {
+                            "id": row[0],
+                            "username": review_username,
+                            "game_name": row[2],
+                            "game_developer": row[3],
+                            "rating": row[4],
+                            "comment": row[5],
+                            "location": row[6],
+                            "public": row[7],
+                        }
+                    )
+
+                return all_reviews
+        except Exception as e:
+            print("Unknown Error")
+            print(e)
+            return "UnknownError"
