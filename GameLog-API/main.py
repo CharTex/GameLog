@@ -54,7 +54,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 def new_account(account: models.AccountCreate):
     # Creates a new account on the server.
 
-    account.username = account.username.lower()
     account.email = account.email.lower()
 
     # Server-side validation of email and passwords
@@ -91,8 +90,6 @@ def new_account(account: models.AccountCreate):
 @app.post("/login", summary="Get the access tokens using a username and password")
 def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
 
-    form_data.username = form_data.username.lower()
-
     id = database.verify_login_by_username(form_data.username, form_data.password)
 
     if id != False:
@@ -122,7 +119,13 @@ def create_review (current_user: Annotated[models.ReviewCreate, Depends(authenti
 
 @app.get("/reviews", summary="Get all publicly available reviews.")
 def get_all_reviews(current_user: Annotated[models.Account, Depends(authentication.get_current_user)]):
-    return
+    account_type = database.get_account_info_by_id(current_user)["account_type"]
+    if account_type == "user":
+        # User accounts only get public reviews with no location data.
+        return database.get_all_public_reviews()
+    else:
+        # Admin accounts view all reviews + location data.
+        return
 
 @app.get("/reviews/{id}", summary="Get all of a user's reviews.")
 def get_users_reviews(current_user: Annotated[models.Account, Depends(authentication.get_current_user)]):

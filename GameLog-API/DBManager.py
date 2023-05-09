@@ -5,6 +5,7 @@ import sqlite3
 import os
 import time
 import re
+import json
 
 import encryption
 
@@ -207,7 +208,6 @@ class DBManager:
     
     def create_review(self, account_id, game_name, game_developer, rating, comment, location, public):
         # Creates a review in the database.
-        # Passes Safe Query Parameters to avoid SQL Injection
         cursor = self.connection.cursor()
         try:
             cursor.execute(
@@ -216,6 +216,31 @@ class DBManager:
                   '{comment}', '{location}', '{public}')"""
             )
             self.connection.commit()
+        except Exception as e:
+            print("Unknown Error")
+            print(e)
+            return "UnknownError"
+        return True
+    
+    def get_all_public_reviews(self):
+        # Gets all reviews with a public value of True
+        cursor = self.connection.cursor()
+        try:
+            cursor.execute(
+                "SELECT * FROM reviews WHERE public='True'"
+            )
+
+            # Get all public rows
+            rows = cursor.fetchall()
+            if len(rows) != 0:
+                public_reviews = []
+                for row in rows:
+                    review_username = self.get_account_info_by_id(row[1])["username"]
+                    public_reviews.append({"id": row[0], "username": review_username, "game_name": row[2], "game_developer": row[3], "rating": row[4], "comment": row[5]})
+
+                return public_reviews
+
+
         except Exception as e:
             print("Unknown Error")
             print(e)

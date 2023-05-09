@@ -75,17 +75,6 @@ export default function NewReview({ navigation }) {
             locationString = isCoords.latitude + "," + isCoords.longitude
         }
 
-        let temp = JSON.stringify({
-            "game_name": gameName.value,
-            "game_developer": gameDeveloper.value,
-            "review_score": rating,
-            "comment": comment.value,
-            "location": locationString,
-            "public": publicCheckboxState
-          })
-
-        console.log(temp)
-
         fetch(ip + "reviews", {
             method: 'POST',
             headers: {
